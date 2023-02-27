@@ -80,6 +80,13 @@ def login():
 
 # user_loader callback. This callback is used to reload the user object from
 # the user ID stored in the session
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    flash('You were logged out', 'success')
+    return redirect(url_for('home'))
+
 @login_manager.user_loader
 def load_user(id):
     return db.session.execute(db.select(UserProfile).filter_by(id=id)).scalar()
@@ -121,7 +128,7 @@ def get_uploaded_images():
         for file in files:
           filelist.append(file)
     return filelist
-    
+
 @app.errorhandler(404)
 def page_not_found(error):
     """Custom 404 page."""
