@@ -1,6 +1,6 @@
 import os
 from app import app, db, login_manager
-from flask import render_template, request, redirect, url_for, flash, session, abort
+from flask import render_template, request, redirect, url_for, flash, session, abort, send_from_directory
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
@@ -42,6 +42,14 @@ def upload():
         return render_template('upload.html', uploadForm=uploadForm) # Update this to redirect the user to a route that displays all uploaded image files
     return render_template('upload.html', uploadForm=uploadForm)
 
+@app.route("/uploads/<filename>")
+def get_image(filename):
+    return send_from_directory(os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER']), filename)
+
+@app.route('/files')
+@login_required
+def files():
+    return render_template('files.html', filelist = get_uploaded_images())
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -106,7 +114,14 @@ def add_header(response):
     response.headers['Cache-Control'] = 'public, max-age=0'
     return response
 
-
+def get_uploaded_images():
+    filelist = []
+    rootdir = os.getcwd()
+    for subdir, dirs, files in os.walk(rootdir+app.config['UPLOAD_FOLDER'][1:]):
+        for file in files:
+          filelist.append(file)
+    return filelist
+    
 @app.errorhandler(404)
 def page_not_found(error):
     """Custom 404 page."""
